@@ -1,0 +1,44 @@
+package com.tom.redisdiscover.jedispool.pipeline;
+
+import com.tom.redisdiscover.jedispool.PooledJedisFactory;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.Pipeline;
+
+import java.util.List;
+import java.util.Objects;
+
+/**
+ * @author Tom
+ * @version 1.0.0
+ * @ClassName JedisOprPipelineByPoolMain.java
+ * @Description TODO
+ * @createTime 2024年12月27日 16:31:00
+ */
+public class PooledJedisSetAndGetResultViaPipeline {
+    public static void main(String[] args) {
+        PooledJedisFactory busiJedisFactoryUsingPool = PooledJedisFactory.build();
+        // 从jedis连接池获取jedis对象
+        Jedis jedis = busiJedisFactoryUsingPool.getJedis();
+        try {
+            setAndGetReulst(jedis);
+        } catch (Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        } finally {
+            if (Objects.nonNull(jedis)) {
+                jedis.close();
+            }
+        }
+    }
+
+    private static void setAndGetReulst(Jedis jedis) {
+        // 生成pipeline对象
+        Pipeline pipeline = jedis.pipelined();
+        pipeline.set("user03", "zhangsan03");
+        pipeline.incr("age");
+        // syncAndReturnAll 执行流水线命令并返回结果
+        List<Object> resultList = pipeline.syncAndReturnAll();
+        for (Object result : resultList) {
+            System.out.println(result);
+        }
+    }
+}
